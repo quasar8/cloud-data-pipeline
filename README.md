@@ -83,9 +83,14 @@ MySQL Workbench (local development), Google Cloud Platform Console
 
 ## 📈 Visualisations
  
-![Database Entity-Relationship Diagram](images/database_schema.png)
-*Entity-relationship diagram of the `gans_local` schema (generated in MySQL Workbench), showing the 5 tables and how `population`, `weather`, and `airports` all connect back to `cities` via foreign keys, with `flights` connected through `airports`.*
- 
+## Database Entity-Relationship Diagram
+<img src="images/schemegans.png" width="700"/>
+Entity-relationship diagram of the `gans_local` schema (generated in MySQL Workbench), showing the 5 tables and how `population`, `weather`, and `airports` all connect back to `cities` via foreign keys, with `flights` connected through `airports`.
+
+
+## Deployed Cloud Run Functions
+<img src="images/cloudfunctions.png"/>
+ All 5 data-collection functions deployed and active on Google Cloud Run, each running independently in the `europe-west1` region
 
 ## 🖼️ Pipeline Architecture
 
@@ -113,11 +118,7 @@ MySQL Workbench (local development), Google Cloud Platform Console
 ```
 *Each table is served by its own independently deployable and schedulable Cloud Function, all writing back to the shared `gans_local` MySQL instance. This mirrors how a real data team splits ownership across data sources.*
 
-**Database schema:**
-```
-cities ─┬─< population
-        ├─< weather
-        └─< airports ─< flights
+
 ```
 
 ---
