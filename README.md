@@ -1,2 +1,181 @@
-# cloud-data-pipeline
-Automated serverless data pipeline (GCP Cloud Functions + Cloud SQL + Cloud Scheduler) that collects city, population, weather, and flight data for Istanbul and Antalya to support e-scooter demand prediction for a fictional startup, Gans.
+# Automated Cloud Data Pipeline for E-Scooter Demand Prediction — Gans Case Study
+
+## 🎯 Project Overview
+
+Gans, an e-scooter-sharing startup, struggles to keep scooters distributed where users actually need them, since usage patterns shift with weather, tourist inflows, and time of day. This project builds a fully automated data pipeline that collects city, population, weather, and flight data from public sources and APIs, then stores it in a cloud SQL database on a recurring schedule. The result is a serverless, self-updating data foundation that Gans' team can query at any time to eventually power scooter-demand predictions, without anyone needing to run scripts manually.
+
+---
+
+## 📊 Dataset & Sources
+
+- **Cities:** Istanbul and Antalya, Turkey
+- **City metadata (coordinates, country):** scraped from [Wikipedia](https://www.wikipedia.org/)
+- **Population data:** scraped from [Wikipedia](https://www.wikipedia.org/) infoboxes
+- **Weather forecasts:** [OpenWeatherMap API](https://openweathermap.org/) — 5-day / 3-hour forecast data (temperature, rain probability, wind speed, outlook)
+- **Airports & flights:** [AeroDataBox API (via RapidAPI)](https://rapidapi.com/aedbx-aedbx/api/aerodatabox) — nearby airports and next-day scheduled arrivals
+- **Storage:** Google Cloud SQL (MySQL 8.0), 5 relational tables (`cities`, `population`, `weather`, `airports`, `flights`)
+- **Notes:** weather and flight data are volatile by nature and re-collected on a recurring schedule rather than stored as a static snapshot; population is collected annually since it changes slowly
+
+---
+
+## 🚀 Key Findings & Results
+
+This project's deliverable is the pipeline itself rather than an analytical model, so the key results are architectural and operational:
+
+- Migrated a fully working local pipeline (Python + MySQL Workbench) into **5 independent, serverless Cloud Run Functions** — one per data table — with zero shared server infrastructure to maintain
+- Automated recurring data collection via **Cloud Scheduler**, replacing manual script execution entirely:
+  - Weather refreshed every 3 hours
+  - Flights refreshed daily at 05:00
+  - Population refreshed yearly on Jan 1st at 12:00
+- Designed a normalized relational schema connecting all 5 tables back to `cities`, enabling joined queries across population, weather, and flight data per city
+- **Business impact:** the pipeline now gives Gans continuously updated, queryable data on the exact factors called out in the business case (weather-driven usage drops, tourist inflows via flights) without any manual intervention
+
+---
+
+## 🛠️ Technologies Used
+
+**Programming:**
+Python, SQL
+
+**Libraries:**
+pandas, SQLAlchemy, PyMySQL, requests, BeautifulSoup, lat-lon-parser, pytz
+
+**Cloud Infrastructure:**
+Google Cloud SQL (MySQL 8.0), Google Cloud Run Functions (Gen2, Python 3.12), Google Cloud Scheduler
+
+**APIs:**
+OpenWeatherMap API, AeroDataBox API (RapidAPI)
+
+**Environment:**
+MySQL Workbench (local development), Google Cloud Platform Console
+
+---
+
+## 📁 Project Structure
+
+```
+├── cities-function/
+│   ├── main.py              # Scrapes & loads city coordinates/country
+│   ├── keys.py              
+│   └── requirements.txt
+├── population-function/
+│   ├── main.py              # Scrapes & loads population data
+│   ├── keys.py
+│   └── requirements.txt
+├── weather-function/
+│   ├── main.py              # Fetches & loads weather forecasts
+│   ├── keys.py
+│   └── requirements.txt
+├── airports-function/
+│   ├── main.py              # Fetches & loads nearby airports
+│   ├── keys.py
+│   └── requirements.txt
+├── flights-function/
+│   ├── main.py              # Fetches & loads next-day flight arrivals
+│   ├── keys.py
+│   └── requirements.txt
+└── sql/
+    └── create_tables.sql    # Full database schema (DDL)
+```
+
+---
+
+
+## 📈 Visualisations
+ 
+![Database Entity-Relationship Diagram](images/database_schema.png)
+*Entity-relationship diagram of the `gans_local` schema (generated in MySQL Workbench), showing the 5 tables and how `population`, `weather`, and `airports` all connect back to `cities` via foreign keys, with `flights` connected through `airports`.*
+ 
+
+## 🖼️ Pipeline Architecture
+
+```
+                     ┌─────────────────────┐
+                     │   Cloud Scheduler    │
+                     │  (cron triggers)     │
+                     └──────────┬──────────┘
+                                │ HTTP trigger
+                                ▼
+      ┌─────────────────────────────────────────────────┐
+      │              Google Cloud Run Functions           │
+      │                                                     │
+      │   cities-function   population-function            │
+      │   weather-function  airports-function               │
+      │   flights-function                                  │
+      └───────────────────────┬───────────────────────────┘
+                                │ SQLAlchemy / PyMySQL
+                                ▼
+                     ┌─────────────────────┐
+                     │  Google Cloud SQL    │
+                     │  (MySQL 8.0)         │
+                     │  Database: gans_local│
+                     └─────────────────────┘
+```
+*Each table is served by its own independently deployable and schedulable Cloud Function, all writing back to the shared `gans_local` MySQL instance. This mirrors how a real data team splits ownership across data sources.*
+
+**Database schema:**
+```
+cities ─┬─< population
+        ├─< weather
+        └─< airports ─< flights
+```
+
+---
+
+## 🔗 How to Use This Project
+
+1. **Database setup:** create a Google Cloud SQL (MySQL 8.0) instance and run `sql/create_tables.sql` to build the schema.
+2. **Credentials:** in each function folder, create a `keys.py` file with:
+   ```python
+   MySQL_pass = "your-cloud-sql-password"
+   OW_API_key = "your-openweathermap-api-key"      # weather-function only
+   AeroDatabox = "your-rapidapi-aerodatabox-key"    # airports & flights functions only
+   ```
+3. **Deploy each function** (repeat per folder, changing the function name):
+   ```bash
+   gcloud functions deploy cities-function \
+     --gen2 \
+     --runtime=python312 \
+     --region=europe-west1 \
+     --source=. \
+     --entry-point=main \
+     --trigger-http \
+     --allow-unauthenticated
+   ```
+4. **Schedule:** create Cloud Scheduler jobs pointing to each function's HTTPS trigger URL using the cron expressions below.
+
+| Job | Frequency | Cron expression |
+|---|---|---|
+| `weather-function` | Every 3 hours | `0 */3 * * *` |
+| `flights-function` | Daily at 05:00 | `0 5 * * *` |
+| `population-function` | Yearly, Jan 1st at 12:00 | `0 12 1 1 *` |
+
+`cities-function` and `airports-function` are triggered manually/on-demand since city and airport lists rarely change.
+
+**Dependencies:** no local setup needed to run the pipeline — everything executes in Cloud Run. To develop locally, install the packages listed in each `requirements.txt`.
+
+---
+
+## 🐛 Production Issues Resolved
+
+- **`libsqlite3.so.0` missing:** `pandas.to_sql()` imports Python's `sqlite3` module internally even when the target database is MySQL. The Cloud Functions Python runtime image lacks this system library, causing an `ImportError`. **Fix:** installed `pysqlite3-binary` and aliased it as `sqlite3` before importing `pandas`.
+- **DNS / name resolution failure:** caused by leaving a placeholder string instead of the Cloud SQL instance's actual public IP in the connection string.
+- **`Access denied for user 'root'`:** special characters in the MySQL password broke the SQLAlchemy connection URL. **Fix:** used `urllib.parse.quote_plus()` to URL-encode the password before building the connection string.
+
+---
+
+## 🚀 Future Work
+
+- Move credentials to **Google Secret Manager** instead of local `keys.py` files
+- Add automated data validation and failure alerting (e.g., email/Slack on failed runs)
+- Extend coverage to more cities
+- Feed the collected data into a predictive model for scooter demand and rebalancing
+- Connect a BI dashboard (e.g., Looker Studio) to the Cloud SQL instance for visualization
+
+---
+
+## 📧 Contact
+
+Email: your.email@example.com
+LinkedIn: [Your LinkedIn Profile](https://linkedin.com/in/your-profile)
+GitHub: [Your GitHub Profile](https://github.com/your-username)
