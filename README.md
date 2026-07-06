@@ -83,31 +83,34 @@ MySQL Workbench (local development), Google Cloud Platform Console
 
 ## 📈 Visualisations
  
-## Database Entity-Relationship Diagram
+## 1- Database Entity-Relationship Diagram
 <img src="images/schemegans.png" width="700"/>
 Entity-relationship diagram of the `gans_local` schema (generated in MySQL Workbench), showing the 5 tables and how `population`, `weather`, and `airports` all connect back to `cities` via foreign keys, with `flights` connected through `airports`.
 
 
-## Deployed Cloud Run Functions
+## 2- Deployed Cloud Run Functions
 <img src="images/cloudfunctions.png"/>
- All 5 data-collection functions deployed and active on Google Cloud Run, each running independently in the `europe-west1` region
+All 5 data-collection functions deployed and active on Google Cloud Run, each running independently in the `europe-west1` region.
+
+
+
 
 ## 🖼️ Pipeline Architecture
 
 ```
                      ┌─────────────────────┐
-                     │   Cloud Scheduler    │
-                     │  (cron triggers)     │
+                     │   Cloud Scheduler   │
+                     │  (cron triggers)    │
                      └──────────┬──────────┘
                                 │ HTTP trigger
                                 ▼
       ┌─────────────────────────────────────────────────┐
-      │              Google Cloud Run Functions           │
-      │                                                     │
-      │   cities-function   population-function            │
-      │   weather-function  airports-function               │
-      │   flights-function                                  │
-      └───────────────────────┬───────────────────────────┘
+      │              Google Cloud Run Functions         │
+      │                                                 │
+      │   cities-function   population-function         │
+      │   weather-function  airports-function           │
+      │   flights-function                              │
+      └───────────────────────┬─────────────────────────┘
                                 │ SQLAlchemy / PyMySQL
                                 ▼
                      ┌─────────────────────┐
@@ -117,23 +120,21 @@ Entity-relationship diagram of the `gans_local` schema (generated in MySQL Workb
                      └─────────────────────┘
 ```
 *Each table is served by its own independently deployable and schedulable Cloud Function, all writing back to the shared `gans_local` MySQL instance. This mirrors how a real data team splits ownership across data sources.*
-
-
 ```
 
----
 
 ## 🔗 How to Use This Project
-
+ 
 1. **Database setup:** create a Google Cloud SQL (MySQL 8.0) instance and run `sql/create_tables.sql` to build the schema.
 2. **Credentials:** in each function folder, create a `keys.py` file with:
-   ```python
+
+```python
    MySQL_pass = "your-cloud-sql-password"
    OW_API_key = "your-openweathermap-api-key"      # weather-function only
    AeroDatabox = "your-rapidapi-aerodatabox-key"    # airports & flights functions only
-   ```
+```
 3. **Deploy each function** (repeat per folder, changing the function name):
-   ```bash
+```bash
    gcloud functions deploy cities-function \
      --gen2 \
      --runtime=python312 \
@@ -142,41 +143,38 @@ Entity-relationship diagram of the `gans_local` schema (generated in MySQL Workb
      --entry-point=main \
      --trigger-http \
      --allow-unauthenticated
-   ```
+```
 4. **Schedule:** create Cloud Scheduler jobs pointing to each function's HTTPS trigger URL using the cron expressions below.
-
 | Job | Frequency | Cron expression |
 |---|---|---|
 | `weather-function` | Every 3 hours | `0 */3 * * *` |
 | `flights-function` | Daily at 05:00 | `0 5 * * *` |
 | `population-function` | Yearly, Jan 1st at 12:00 | `0 12 1 1 *` |
-
+ 
 `cities-function` and `airports-function` are triggered manually/on-demand since city and airport lists rarely change.
-
+ 
 **Dependencies:** no local setup needed to run the pipeline — everything executes in Cloud Run. To develop locally, install the packages listed in each `requirements.txt`.
-
+ 
 ---
-
+ 
 ## 🐛 Production Issues Resolved
-
+ 
 - **`libsqlite3.so.0` missing:** `pandas.to_sql()` imports Python's `sqlite3` module internally even when the target database is MySQL. The Cloud Functions Python runtime image lacks this system library, causing an `ImportError`. **Fix:** installed `pysqlite3-binary` and aliased it as `sqlite3` before importing `pandas`.
 - **DNS / name resolution failure:** caused by leaving a placeholder string instead of the Cloud SQL instance's actual public IP in the connection string.
 - **`Access denied for user 'root'`:** special characters in the MySQL password broke the SQLAlchemy connection URL. **Fix:** used `urllib.parse.quote_plus()` to URL-encode the password before building the connection string.
-
 ---
-
+ 
 ## 🚀 Future Work
-
+ 
 - Move credentials to **Google Secret Manager** instead of local `keys.py` files
 - Add automated data validation and failure alerting (e.g., email/Slack on failed runs)
 - Extend coverage to more cities
 - Feed the collected data into a predictive model for scooter demand and rebalancing
 - Connect a BI dashboard (e.g., Looker Studio) to the Cloud SQL instance for visualization
-
 ---
-
+ 
 ## 📧 Contact
-
+ 
 Email: your.email@example.com
 LinkedIn: [Your LinkedIn Profile](https://linkedin.com/in/your-profile)
 GitHub: [Your GitHub Profile](https://github.com/your-username)
