@@ -122,30 +122,42 @@ Cloud Scheduler jobs automating the pipeline: weather refreshes every 3 hours, f
                      └─────────────────────┘
 ```
 *Each table is served by its own independently deployable and schedulable Cloud Function, all writing back to the shared `gans_local` MySQL instance. This mirrors how a real data team splits ownership across data sources.*
-```
+
 
 
 ## 🔗 How to Use This Project
  
-1. **Database setup:** create a Google Cloud SQL (MySQL 8.0) instance and run `sql/create_tables.sql` to build the schema.
-2. **Credentials:** in each function folder, create a `keys.py` file with:
+1. **Database setup:** Create a Google Cloud SQL (MySQL 8.0) instance from the GCP Console. Once it's running, connect to it from your local machine using MySQL Workbench: create a new connection, enter the instance's public IP as the hostname, keep `root` as the username, and use the password you set during instance creation. Through that connection, open and run `sql/create_tables.sql`. This creates the `gans_local` database and all 5 tables (`cities`, `population`, `weather`, `airports`, `flights`) with their relationships already in place.
 
+2. **Create the Cloud Run Functions**
+ 
+In the GCP Console search bar, search for **Cloud Run Functions** and open it. You'll repeat this process 5 times, once per table:
+ 
+- Click **Deploy container**
+- Select the **Functions** option
+- Give it a name matching its table (e.g., `cities-function`)
+- Choose your region and the Python runtime
+- Click **Create**
+- Paste that table's function code into the `main.py` section of the inline code editor
+- Set **Entry point** to `main` — this has to match the function name defined in your code (`def main(request):`)
+- Switch to the `requirements.txt` tab in the same editor and paste in that function's dependencies (see each function's `requirements.txt` in this repo)
+
+Repeat for `cities-function`, `population-function`, `weather-function`, `airports-function`, and `flights-function`.
+
+3. **Credentials:** Before writing any keys, sign up for the two APIs the pipeline depends on:
+ 
+- [OpenWeatherMap](https://openweathermap.org/api) — create a free account and generate an API key. This is needed for `weather-function`.
+- [AeroDataBox on RapidAPI](https://rapidapi.com/aedbx-aedbx/api/aerodatabox) — create a RapidAPI account, subscribe to AeroDataBox's free tier, and copy your RapidAPI key. This is needed for `airports-function` and `flights-function`.
+Then, in each function folder, create a `keys.py` file with:
+ 
 ```python
-   MySQL_pass = "your-cloud-sql-password"
-   OW_API_key = "your-openweathermap-api-key"      # weather-function only
-   AeroDatabox = "your-rapidapi-aerodatabox-key"    # airports & flights functions only
+MySQL_pass = "your-cloud-sql-password"
+OW_API_key = "your-openweathermap-api-key"      # weather-function only
+AeroDatabox = "your-rapidapi-aerodatabox-key"    # airports & flights functions only
 ```
-3. **Deploy each function** (repeat per folder, changing the function name):
-```bash
-   gcloud functions deploy cities-function \
-     --gen2 \
-     --runtime=python312 \
-     --region=europe-west1 \
-     --source=. \
-     --entry-point=main \
-     --trigger-http \
-     --allow-unauthenticated
-```
+
+
+
 4. **Schedule:** create Cloud Scheduler jobs pointing to each function's HTTPS trigger URL using the cron expressions below.
 | Job | Frequency | Cron expression |
 |---|---|---|
