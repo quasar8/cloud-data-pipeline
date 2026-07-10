@@ -92,7 +92,7 @@ Entity-relationship diagram of the `gans_local` schema (generated in MySQL Workb
 <img src="images/cloudfunctions.png"/>
 All 5 data-collection functions deployed and active on Google Cloud Run, each running independently in the `europe-west1` region.
 
-## 3- Cloud Scheduler Jobs]
+## 3- Cloud Scheduler Jobs
 <img src="images/schedulergans.png"/>
 Cloud Scheduler jobs automating the pipeline: weather refreshes every 3 hours, flights update daily at 05:00, and population updates once a year — each triggering its corresponding Cloud Function's HTTPS endpoint on schedule, with no manual intervention.
 
