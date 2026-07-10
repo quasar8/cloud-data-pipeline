@@ -44,4 +44,4 @@ def main(request):
     connection_string = f"mysql+pymysql://root:{MySQL_pass}@{PUBLIC_IP}:3306/{DB_NAME}"
     cities_list = ["Istanbul", "Antalya"]
     scrape_and_send_city_data(cities_list, connection_string)
-    return "Cities tablosu güncellendi.", 200
+    return "Cities table is updated", 200
