@@ -189,5 +189,5 @@ Create Cloud Scheduler jobs pointing to each function's HTTPS trigger URL using 
 ## 📧 Contact
  
 Email: koclusafak@gmail.com
-LinkedIn: [Your LinkedIn Profile](https://linkedin.com/in/your-profile)
-GitHub: [Your GitHub Profile](https://github.com/your-username)
+LinkedIn: [My LinkedIn Profile](https://www.linkedin.com/in/safak-koclu/)
+GitHub: [My GitHub Profile](https://github.com/quasar8)
