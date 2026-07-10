@@ -60,13 +60,4 @@ CREATE TABLE flights(
     FOREIGN KEY (arrival_airport_icao) REFERENCES airports(icao)
 );
 
-SELECT * FROM cities;
-
-SELECT * FROM population;
-
-SELECT * FROM weather;
-
-SELECT * FROM airports;
-
-SELECT * FROM flights;
 
