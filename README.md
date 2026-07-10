@@ -54,6 +54,7 @@ MySQL Workbench (local development), Google Cloud Platform Console
 ## 📁 Project Structure
 
 ```
+├── README.md
 ├── cities-function/
 │   ├── main.py              # Scrapes & loads city coordinates/country
 │   ├── keys.py              
