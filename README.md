@@ -157,8 +157,10 @@ AeroDatabox = "your-rapidapi-aerodatabox-key"    # airports & flights functions 
 ```
 
 
-
-4. **Schedule:** create Cloud Scheduler jobs pointing to each function's HTTPS trigger URL using the cron expressions below.
+**4. Schedule**
+ 
+Create Cloud Scheduler jobs pointing to each function's HTTPS trigger URL using the cron expressions below.
+ 
 | Job | Frequency | Cron expression |
 |---|---|---|
 | `weather-function` | Every 3 hours | `0 */3 * * *` |
@@ -167,28 +169,25 @@ AeroDatabox = "your-rapidapi-aerodatabox-key"    # airports & flights functions 
  
 `cities-function` and `airports-function` are triggered manually/on-demand since city and airport lists rarely change.
  
-**Dependencies:** no local setup needed to run the pipeline — everything executes in Cloud Run. To develop locally, install the packages listed in each `requirements.txt`.
  
 ---
- 
+
+
 ## 🐛 Production Issues Resolved
  
 - **`libsqlite3.so.0` missing:** `pandas.to_sql()` imports Python's `sqlite3` module internally even when the target database is MySQL. The Cloud Functions Python runtime image lacks this system library, causing an `ImportError`. **Fix:** installed `pysqlite3-binary` and aliased it as `sqlite3` before importing `pandas`.
-- **DNS / name resolution failure:** caused by leaving a placeholder string instead of the Cloud SQL instance's actual public IP in the connection string.
-- **`Access denied for user 'root'`:** special characters in the MySQL password broke the SQLAlchemy connection URL. **Fix:** used `urllib.parse.quote_plus()` to URL-encode the password before building the connection string.
+
 ---
  
 ## 🚀 Future Work
  
 - Move credentials to **Google Secret Manager** instead of local `keys.py` files
-- Add automated data validation and failure alerting (e.g., email/Slack on failed runs)
-- Extend coverage to more cities
 - Feed the collected data into a predictive model for scooter demand and rebalancing
-- Connect a BI dashboard (e.g., Looker Studio) to the Cloud SQL instance for visualization
+
 ---
  
 ## 📧 Contact
  
-Email: your.email@example.com
+Email: koclusafak@gmail.com
 LinkedIn: [Your LinkedIn Profile](https://linkedin.com/in/your-profile)
 GitHub: [Your GitHub Profile](https://github.com/your-username)
