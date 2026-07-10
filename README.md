@@ -195,7 +195,7 @@ Create Cloud Scheduler jobs pointing to each function's HTTPS trigger URL using 
 The full story behind this project — challenges, bugs, and lessons learned — is published on Medium: [From My Laptop to the Cloud](https://medium.com/@safakkoclu/from-my-laptop-to-the-cloud-building-an-automated-data-pipeline-931bc507d05f?sharedUserId=safakkoclu)
  
 ## 📧 Contact
- 
+- Name : Safak Koclu
 - Email: koclusafak@gmail.com
 - LinkedIn: [My LinkedIn Profile](https://www.linkedin.com/in/safak-koclu/)
 - GitHub: [My GitHub Profile](https://github.com/quasar8)
