@@ -186,6 +186,9 @@ Create Cloud Scheduler jobs pointing to each function's HTTPS trigger URL using 
 - Feed the collected data into a predictive model for scooter demand and rebalancing
 
 ---
+## ✍️ Write-up
+
+The full story behind this project — challenges, bugs, and lessons learned — is published on Medium: [From My Laptop to the Cloud](https://medium.com/@safakkoclu/from-my-laptop-to-the-cloud-building-an-automated-data-pipeline-931bc507d05f?sharedUserId=safakkoclu)
  
 ## 📧 Contact
  
