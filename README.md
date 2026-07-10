@@ -1,5 +1,5 @@
 # Automated Cloud Data Pipeline for E-Scooter Demand Prediction — Gans Case Study
-📝 **Read my Medium article of this project:** [From My Laptop to the Cloud: Building an Automated Data Pipeline for an E-Scooter Startup](https://medium.com/@safakkoclu/from-my-laptop-to-the-cloud-building-an-automated-data-pipeline-931bc507d05f?sharedUserId=safakkoclu)
+📝 **Read my Medium article about this project:** [From My Laptop to the Cloud: Building an Automated Data Pipeline for an E-Scooter Startup](https://medium.com/@safakkoclu/from-my-laptop-to-the-cloud-building-an-automated-data-pipeline-931bc507d05f?sharedUserId=safakkoclu)
 
 ## 🎯 Project Overview
 
