@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from lat_lon_parser import parse
 from keys import MySQL_pass
 
-PUBLIC_IP = "34.62.74.158"
+PUBLIC_IP = "your-cloud-sql-public-ip"
 DB_NAME = "gans_local"
 
 
