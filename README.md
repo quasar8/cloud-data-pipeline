@@ -141,6 +141,10 @@ In the GCP Console search bar, search for **Cloud Run Functions** and open it. Y
 - Click **Create**
 - Paste that table's function code into the `main.py` section of the inline code editor
 - Set **Entry point** to `main` — this has to match the function name defined in your code (`def main(request):`)
+- In that same code, replace the `PUBLIC_IP` with your own Cloud SQL instance's public IP:
+```python
+  PUBLIC_IP = "your-cloud-sql-public-ip"
+```
 - Switch to the `requirements.txt` tab in the same editor and paste in that function's dependencies (see each function's `requirements.txt` in this repo)
 
 Repeat for `cities-function`, `population-function`, `weather-function`, `airports-function`, and `flights-function`.
