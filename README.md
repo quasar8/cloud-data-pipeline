@@ -88,12 +88,13 @@ MySQL Workbench (local development), Google Cloud Platform Console
 <img src="images/schemegans.png" width="700"/>
 Entity-relationship diagram of the `gans_local` schema (generated in MySQL Workbench), showing the 5 tables and how `population`, `weather`, and `airports` all connect back to `cities` via foreign keys, with `flights` connected through `airports`.
 
-
 ## 2- Deployed Cloud Run Functions
 <img src="images/cloudfunctions.png"/>
 All 5 data-collection functions deployed and active on Google Cloud Run, each running independently in the `europe-west1` region.
 
-
+## 3- Cloud Scheduler Jobs]
+<img src="images/schedulergans.png"/>
+Cloud Scheduler jobs automating the pipeline: weather refreshes every 3 hours, flights update daily at 05:00, and population updates once a year — each triggering its corresponding Cloud Function's HTTPS endpoint on schedule, with no manual intervention.
 
 
 ## 🖼️ Pipeline Architecture
